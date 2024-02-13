@@ -26,6 +26,56 @@ fs.readdir(viewsDirectory, (err, files) => {
 });
 
 /**
+ * @param {Response} response
+ */
+const sendHtml = (response, status, headers, name) => {
+    response.writeHead(status, {
+        "Content-Type": "text/html",
+        ...headers
+    });
+    response.write(paths[name]);
+}
+
+/**
+ * @param {Response} response
+ */
+const redirect = (response, status, location) => {
+    response.writeHead(status, {
+        "Location": location
+    });
+}
+
+/**
+ * @param {Request} request
+ * @param {Response} response
+ */
+const specialHandle = (request, response, path) => {
+    switch (path) {
+        case "/holidays":
+            const hasCookies = request.headers?.cookie;
+            if (hasCookies) return true;
+            sendHtml(response, 401, {}, "unauthenticated");
+            return false;
+        case "/login":
+            sendHtml(response, 200, {
+                "Set-Cookie": "auth=token"
+            }, "login");
+            return false;
+        case "/calender":
+            redirect(response, 308, "/holidays");
+            return false;
+        case "/about-me":
+            redirect(response, 301, "/about");
+            return false;
+        case "/support":
+            redirect(response, 302, "https://example.com");
+            return false;
+        default:
+            return true;
+    }
+}
+
+/**
  * @param {Request} request
  * @param {Response} response
  */
@@ -35,19 +85,13 @@ module.exports = (request, response, path) => {
         noramlizedPath = "index";
     }
 
-    if (allowedPaths.includes(noramlizedPath)) {
-        const content = paths[noramlizedPath];
-        response.writeHead(200, {
-            "Content-Type": "text/html"
-        })
-        response.write(content);
-    } else {
-        response.writeHead(404, {
-            "Content-Type": "text/html"
-        })
-        response.write(paths["404"]);
-
-        LOGGER.emit("warn", `(Views) No file for route: ${noramlizedPath}`);
+    if (specialHandle(request, response, path)) {
+        if (allowedPaths.includes(noramlizedPath)) {
+            sendHtml(response, 200, {}, noramlizedPath);
+        } else {
+            sendHtml(response, 404, {}, "404");
+            LOGGER.emit("warn", `(Views) No file for route: ${noramlizedPath}`);
+        }
     }
     response.end();
 }

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+<head>
+    <meta charset="UTF-8">
+    <title>Holidays</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+</head>
+<body style="height: 100%">
+    <header style="display: flex; flex-direction: row; gap: 1rem; font-size: 2rem; justify-content: center;">
+        <a href="/">Home</a>
+        <a href="/holidays">Holidays</a>
+        <a href="/about">About</a>
+        <a href="/support">Support</a>
+        <a href="/login">Login</a>
+    </header>
+    <main style="display: flex; justify-content: center; align-items: center; flex-direction: column; height: 100%">
+        <h1>Holidays</h1>
+        <section id="holidays">
+
+        </section>
+    </main>
+</body>
+<script>
+    fetch("/api/holidays")
+        .then(res => res.json())
+        .then(holidays => {
+            const holidaysDocument = document.getElementById("holidays");
+
+            for (let holiday of holidays) {
+                const header = document.createElement("h1");
+                header.innerText = holiday.name;
+
+                const date = document.createElement("span");
+                date.style.color = "gray"
+                date.innerText = ` (${holiday.date})`;
+
+                const places = document.createElement("p");
+                places.innerText = `Places: ${holiday.counties.join(", ")}`;
+
+                header.appendChild(date);
+                holidaysDocument.appendChild(header);
+                holidaysDocument.appendChild(places);
+                holidaysDocument.appendChild(document.createElement("br"));
+            }
+        })
+        .catch(error => {
+            holidaysDocument.innerText = "Failed to retrieve holidays!";
+        })
+</script>
+</html>
