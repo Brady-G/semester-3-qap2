@@ -6,12 +6,13 @@ module.exports = () => {
     const url = `${URL}/${new Date().getFullYear()}/CA`;
     return axios.get(url)
             .then(response => {
+                const holidays = [];
                 for (const value of response.data) {
-                    const date = Date.parse(value.date);
-                    if (date > new Date()) {
-                        return value;
+                    const date = new Date(value.date);
+                    if (date.getMonth() === new Date().getMonth()) {
+                        holidays.push(value);
                     }
                 }
-                return null;
+                return holidays;
             });
 }
