@@ -1,5 +1,8 @@
 const http = require("http");
 const url = require("url");
+const LOGGER = require("./scripts/logger");
+
+LOGGER.emit("setdebug", process.argv.includes("--debug-mode"));
 
 const views = require("./scripts/views");
 const api = require("./scripts/api");
