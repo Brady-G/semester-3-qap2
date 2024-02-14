@@ -1,4 +1,4 @@
-const holidays = require("./holidays");
+const Holidays = require("date-holidays");
 const LOGGER = require("./logger");
 const { STATUS_CODES } = require("http");
 
@@ -25,15 +25,29 @@ const getHolidays = (request, response) => {
         }, 405);
         return;
     }
-    holidays().then(res => {
-        sendJson(response, res, 200);
-    }).catch(err => {
+    try {
+        const holidays = new Holidays("CA").getHolidays(new Date());
+        const jsonHolidays = [];
+        for (const holiday of holidays) {
+            jsonHolidays.push({
+                name: holiday.name,
+                date: holiday.start.toDateString(),
+                type: holiday.type,
+            });
+        }
+
+        sendJson(
+            response, 
+            jsonHolidays,
+            200
+        );
+    } catch(err) {
         LOGGER.emit("error", `(API) Error while retriving holidays: ${err}`);
         sendJson(response, {
             success: false,
             data: "Internal server error"
         }, 500);
-    })
+    }
 }
 
 /**
