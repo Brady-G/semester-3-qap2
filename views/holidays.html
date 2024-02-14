@@ -14,8 +14,8 @@
         <a href="/login">Login</a>
     </header>
     <main style="display: flex; justify-content: center; align-items: center; flex-direction: column; height: 100%">
-        <h1>Holidays</h1>
-        <section id="holidays">
+        <h1 style="margin: 0; padding-top: 10rem;">Holidays</h1>
+        <section id="holidays" style="height: 100%;">
 
         </section>
     </main>
@@ -25,21 +25,33 @@
         .then(res => res.json())
         .then(holidays => {
             const holidaysDocument = document.getElementById("holidays");
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
 
             for (let holiday of holidays) {
-                const header = document.createElement("h1");
+                const date = new Date(holiday.date);
+                const difference = date.getTime() - startOfToday.getTime();
+                if (difference < 0) continue;
+
+                const header = document.createElement("h4");
                 header.innerText = holiday.name;
 
-                const date = document.createElement("span");
-                date.style.color = "gray"
-                date.innerText = ` (${holiday.date})`;
+                const dateText = document.createElement("span");
+                dateText.style.color = "gray"
+                dateText.innerText = ` (${date.toLocaleDateString()})`;
 
-                const places = document.createElement("p");
-                places.innerText = `Places: ${holiday.counties.join(", ")}`;
+                const type = document.createElement("p");
+                type.innerText = `Type: ${holiday.type}`;
 
-                header.appendChild(date);
+                const daysAway = document.createElement("p");
+                const days = Math.round(difference / (86400000));
+                const daysAwayText = days == 0 ? "Today" : `${days} day${days > 1 ? "s" : ""} away`;
+                daysAway.innerText = `Days Away: ${daysAwayText}`
+
+                header.appendChild(dateText);
                 holidaysDocument.appendChild(header);
-                holidaysDocument.appendChild(places);
+                holidaysDocument.appendChild(type);
+                holidaysDocument.appendChild(daysAway);
                 holidaysDocument.appendChild(document.createElement("br"));
             }
         })
