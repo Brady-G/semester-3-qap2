@@ -21,6 +21,7 @@ fs.readdir(viewsDirectory, (err, files) => {
             const fileName = file.substring(0, file.length - 5);
             paths[fileName] = contents;
             allowedPaths.push(fileName);
+            LOGGER.emit("debug", `Found view ${fileName}`);
         }
     });
 });

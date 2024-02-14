@@ -5,6 +5,7 @@ const fsSync = require("fs");
 
 const logsDirectory = path.join(path.dirname(require.main.filename), "logs");
 const events = new EventEmitter();
+let debug = false;
 
 if (!fsSync.existsSync(logsDirectory)) {
     fsSync.mkdirSync(logsDirectory);
@@ -18,15 +19,21 @@ const writeToFile = (line) => {
         .catch(err => console.error("Error occurred saving log line: " + err));
 }
 
-const writeToLog = (level, message) => {
+const writeToLog = (level, message, logger) => {
     const line = `${new Date().toLocaleTimeString()} [${level}] ${message}`;
     writeToFile(line);
-    console.log(line);
+    logger(line);
 }
 
-events.on("info", message => writeToLog("INFO", message));
-events.on("error", message => writeToLog("ERROR", message));
-events.on("warn", message => writeToLog("WARN", message));
-events.on("critical", message => writeToLog("CRITICAL", message));
+events.on("setdebug", enabled => debug = enabled);
+
+events.on("info", message => writeToLog("INFO", message, console.info));
+events.on("error", message => writeToLog("ERROR", message, console.error));
+events.on("warn", message => writeToLog("WARN", message, console.warn));
+events.on("critical", message => writeToLog("CRITICAL", message, console.error));
+events.on("debug", message => {
+    if (!debug) return;
+    writeToLog("DEBUG", message, console.debug)
+});
 
 module.exports = events;
